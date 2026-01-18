@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/bikelab/ros2_ws/install/bikelab_interfaces/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/bikelab/ros2_ws/src/bikelab_interfaces/include/**",
+        "/home/bikelab/ros2_ws/src/ublox_dgnss/ntrip_client_node/include/**",
+        "/home/bikelab/ros2_ws/src/ublox_dgnss/ublox_dgnss_node/include/**",
+        "/home/bikelab/ros2_ws/src/ublox_dgnss/ublox_nav_sat_fix_hp_node/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-arm64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

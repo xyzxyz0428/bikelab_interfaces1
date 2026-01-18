@@ -1,0 +1,14 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/bikelab/ros2_ws/install/bikelab_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/home/bikelab/ros2_ws/install/lib/python3.10/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/bikelab/ros2_ws/install/bikelab_interfaces/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/home/bikelab/ros2_ws/install/lib/python3.10/site-packages"
+    ]
+}
