@@ -8,11 +8,9 @@ from std_msgs.msg import Header
 import time
 
 ##config
-ADC_minus_90=188
-ADC_minus_45= 363
-ADC_0= 514
-ADC_45= 688
-ADC_90= 851
+ADC_minus_90=235
+ADC_0= 551
+ADC_90= 867
 
 class PotentiometerDriver(Node):
     def __init__(self):
@@ -34,9 +32,7 @@ class PotentiometerDriver(Node):
             # Define calibration points: (adc_value, angle)
             calibration_points = [
                 (ADC_minus_90, -90),
-                (ADC_minus_45,-45),
                 (ADC_0, 0),
-                (ADC_45, 45),
                 (ADC_90, 90)
             ]
 
