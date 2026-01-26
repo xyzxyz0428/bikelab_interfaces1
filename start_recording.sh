@@ -72,7 +72,7 @@ tmux split-window -h -t "$SESSION:$WIN_NAME"
 
 # Pane 2 (right-top): IMU node (with your args)
 tmux send-keys -t "$SESSION:$WIN_NAME.2" \
-  "ros2 run wheeltec_n100_imu imu_node --ros-args -p serial_port:=\"/dev/serial/by-id/usb-Dynastream_Innovations_ANT_USB-m_Stick_065-if00-port0\" -p serial_baud:=115200" C-m
+  "ros2 run wheeltec_n100_imu imu_node --ros-args -p serial_port:=\"/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_0003-if00-port0\" -p serial_baud:=115200" C-m
 
 # Make layout tidy (top split into 2, bottom full width)
 tmux select-layout -t "$SESSION:$WIN_NAME" main-horizontal

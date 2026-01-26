@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "# 1) NTP sync check (via system time service, e.g., hotspot internet)"
-echo "#    true  = NTPSynchronized=yes  (system clock is synced by NTP)"
-echo "#    false = NTPSynchronized!=yes (not synced / unknown)"
+echo "# 1) NTP sync check (via hotspot internet)"
+echo "#    true= system clock is synced by NTP"
+echo "#    false= not synced / unknown"
 timedatectl show -p NTPSynchronized --value 2>/dev/null | grep -qi "^yes$" && echo true || echo false
 
 echo
@@ -14,9 +14,8 @@ sudo pmc -u -b 0 "GET PORT_DATA_SET" 2>/dev/null | grep -q "portState[[:space:]]
 
 echo
 echo "# 3) Start GPS rover + NTRIP client in ONE tmux window (split panes)"
-echo "#    - creates tmux session: ublox"
-echo "#    - same window split into 2 panes (top: rover, bottom: ntrip)"
-echo "#    Attach with: tmux attach -t ublox"
+echo "#    - creates tmux session: bikelab_interfaces1"
+echo "#    Attach with: tmux attach -t bikelab_interfaces1"
 echo "#    Switch pane: Ctrl-b then Up/Down (or o)"
 echo "#    Stop node: Ctrl-c in that pane"
 echo "#    Detach (keep running): Ctrl-b then d"
