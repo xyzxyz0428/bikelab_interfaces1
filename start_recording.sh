@@ -52,27 +52,31 @@ if tmux list-windows -t "$SESSION" -F '#W' | grep -qx "$WIN_NAME"; then
   exit 0
 fi
 
-# Create new window
+# 创建新 window（默认只有 1 个 pane：.0）
 tmux new-window -t "$SESSION" -n "$WIN_NAME"
 
-# Pane 0 (left-top): potentiometer
+# 先竖切 -> 生成 bottom pane（.1）
+tmux split-window -v -t "$SESSION:$WIN_NAME.0"
+
+# 再把 top pane（.0）横切 -> 生成 right-top pane（.2）
+tmux split-window -h -t "$SESSION:$WIN_NAME.0"
+
+# 你想要的布局：上面两个、下面一个全宽（可选）
+tmux select-layout -t "$SESSION:$WIN_NAME" main-horizontal
+# 如果你更想 3 个均匀平铺，把上面一行换成：
+# tmux select-layout -t "$SESSION:$WIN_NAME" tiled
+
+# Pane 0：potentiometer
 tmux send-keys -t "$SESSION:$WIN_NAME.0" \
   "ros2 run bikelab_interfaces potentiometer_driver.py" C-m
 
-# Split vertically -> Pane 1 (bottom)
-tmux split-window -v -t "$SESSION:$WIN_NAME"
-
-# Pane 1 (bottom): garmin
+# Pane 1：garmin（注意 pane 1 是 bottom）
 tmux send-keys -t "$SESSION:$WIN_NAME.1" \
   "ros2 run bikelab_interfaces garmin_driver.py" C-m
 
-# Go back to pane 0 and split horizontally -> Pane 2 (right-top)
-tmux select-pane -t "$SESSION:$WIN_NAME.0"
-tmux split-window -h -t "$SESSION:$WIN_NAME"
-
-# Pane 2 (right-top): IMU node (with your args)
+# Pane 2：IMU
 tmux send-keys -t "$SESSION:$WIN_NAME.2" \
-  "ros2 run wheeltec_n100_imu imu_node --ros-args -p serial_port:=\"/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_0003-if00-port0\" -p serial_baud:=115200" C-m
+'ros2 run wheeltec_n100_imu imu_node --ros-args -p serial_port:=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_0003-if00-port0 -p serial_baud:=115200' C-m
 
 # Make layout tidy (top split into 2, bottom full width)
 tmux select-layout -t "$SESSION:$WIN_NAME" main-horizontal
