@@ -8,12 +8,8 @@ from openant.easy.node import Node as ANTNode
 from openant.devices import ANTPLUS_NETWORK_KEY
 from openant.devices.bike_speed_cadence import BikeSpeed, BikeSpeedData as ANT_BikeSpeedData
 from openant.devices.power_meter import PowerMeter, PowerData
-import math
 
 WHEEL_CIRCUMFERENCE_M = 2.20114
-def nan():
-    return float("nan")
-        
 
 class BikeSensorNode(Node):
     def __init__(self, bike_speed_id=18412, power_meter_id=64434):
@@ -35,15 +31,6 @@ class BikeSensorNode(Node):
         self.bike_speed_device.on_device_data = self.on_bike_speed_data
         self.power_meter_device.on_found = self.on_power_meter_found
         self.power_meter_device.on_device_data = self.on_power_meter_data
-
-        from collections import Counter
-        self.page_counter = Counter()
-        self.last_stat_t = self.get_clock().now().nanoseconds
-
-        import os
-        self.page_log_path = os.path.expanduser("~/bikelab_interface_logs/power_pages.txt")
-        os.makedirs(os.path.dirname(self.page_log_path), exist_ok=True)
-        self.page_set = set()
 
         # Start ANT+ node
         self.get_logger().info("Starting ANT+ devices, press Ctrl-C to finish")
@@ -69,67 +56,28 @@ class BikeSensorNode(Node):
                 speed_msg.header.stamp = self.get_clock().now().to_msg()  # Set the timestamp
 
                 # Log and publish message
-                #self.get_logger().info("Publishing bike speed data")
+                self.get_logger().info("Publishing bike speed data")
                 self.speed_publisher.publish(speed_msg)
-
     def on_power_meter_data(self, page: int, page_name: str, data):
-        # --- page discovery (keep this at the top) ---
-        self.page_counter[page] += 1
-        self.page_set.add(page)
-        now = self.get_clock().now().nanoseconds
-        if now - self.last_stat_t > 10_000_000_000:  # 10s
-            s = ", ".join([f"0x{k:02X}:{v}" for k, v in self.page_counter.most_common()])
-            #self.get_logger().info(f"PowerMeter pages (last 10s): {s}")
-            with open(self.page_log_path, "w") as f:
-                f.write("\n".join([f"0x{p:02X}" for p in sorted(self.page_set)]))
-            self.page_counter.clear()
-            self.last_stat_t = now
+        self.get_logger().info(f"PM page=0x{page:02X} ({page}) name={page_name}")
+        if isinstance(data, PowerData):
+            # Prepare and publish PowerMeterData message
+            power_msg = PowerMeterData()
+            # Only publish if speed is not None
+            if power_msg.torque is not None:
+                power_msg.angular_velocity = float(data.angular_velocity) 
+                power_msg.average_power = float(data.average_power) 
+                power_msg.cadence = float(data.cadence)
+                power_msg.instantaneous_power = float(data.instantaneous_power) 
+                power_msg.left_power = float(data.left_power) 
+                power_msg.right_power = float(data.right_power) 
+                power_msg.torque =  float(data.torque) 
+                power_msg.header = Header()
+                power_msg.header.stamp = self.get_clock().now().to_msg()  # Set the timestamp
 
-        if not isinstance(data, PowerData):
-            return
-
-        # ---- only publish on 0x10 and 0x12 ----
-        if page not in (0x10, 0x12):
-            return
-
-        msg = PowerMeterData()
-        msg.header = Header()
-        msg.header.stamp = self.get_clock().now().to_msg()
-
-        # Default everything to NaN (means "missing / not on this page")
-        msg.angular_velocity = nan()
-        msg.average_power = nan()
-        msg.cadence = nan()
-        msg.instantaneous_power = nan()
-        msg.left_power = nan()
-        msg.right_power = nan()
-        msg.torque = nan()
-
-        # cadence is present on both 0x10 and 0x12 in common practice,
-        # but 255 is often used as "invalid/unknown"
-        if int(data.cadence) != 255:
-            msg.cadence = float(data.cadence)
-
-        if page == 0x10:
-            # raw decoded instantaneous power exists on 0x10
-            # 0 is VALID and must stay 0
-            msg.instantaneous_power = float(data.instantaneous_power)
-
-            # left/right: XC100 usually unavailable (often -1). Only publish if >=0.
-            if int(data.left_power) >= 0:
-                msg.left_power = float(data.left_power)
-            if int(data.right_power) >= 0:
-                msg.right_power = float(data.right_power)
-
-            # DO NOT publish avg/torque/omega (derived) -> keep NaN
-
-        elif page == 0x12:
-            # You requested no calculated data.
-            # So on 0x12 we publish ONLY cadence (already handled above),
-            # and keep instantaneous_power/avg/torque/omega as NaN.
-            pass
-
-        self.power_publisher.publish(msg)
+                # Log and publish message
+                self.get_logger().info("Publishing power meter data")
+                self.power_publisher.publish(power_msg)
 
     def destroy_node(self):
         self.bike_speed_device.close_channel()
