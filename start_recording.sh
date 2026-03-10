@@ -72,7 +72,7 @@ fi
 
 echo "true"
 echo
-echo "# GPS ok -> start 3 sensor loggers in tmux session '$SESSION'"
+echo "# GPS ok -> start 4 sensor loggers in tmux session '$SESSION'"
 
 # If window already exists, do not duplicate
 if tmux list-windows -t "$SESSION" -F '#W' | grep -qx "$WIN_NAME"; then
@@ -91,8 +91,9 @@ PANE_POWER="$(tmux split-window -v -P -F '#{pane_id}' -t "$PANE_POT")"
 # split horizontally from the original top pane -> top-right pane
 PANE_IMU="$(tmux split-window -h -P -F '#{pane_id}' -t "$PANE_POT")"
 
-# layout: top two panes, bottom one full width
-tmux select-layout -t "$SESSION:$WIN_NAME" main-horizontal
+
+# layout tidy for 4 panes
+tmux select-layout -t "$SESSION:$WIN_NAME" tiled
 
 # Pane: potentiometer logger
 tmux send-keys -t "$PANE_POT" \
@@ -100,14 +101,15 @@ tmux send-keys -t "$PANE_POT" \
 
 # Pane: rally power logger
 tmux send-keys -t "$PANE_POWER" \
-  "cd \"$SCRIPT_DIR\" && python3 log_rally_power_to_csv.py" C-m
+  "cd \"$SCRIPT_DIR\" && python3 ant_speed_power_logger.py --bike_speed_id 18412 --power_meter_id 64434 --out_dir ~/bikelab_interface_logs/" C-m
 
 # Pane: IMU logger
 tmux send-keys -t "$PANE_IMU" \
-  "cd \"$SCRIPT_DIR\" &&  python3 log_imu_to_csv.py --port /dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_0003-if00-port0 --baud 115200 --timeout_ms 20" C-m
+  "cd \"$SCRIPT_DIR\" && python3 log_imu_to_csv.py --port /dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_0003-if00-port0 --baud 115200 --timeout_ms 20" C-m
+
 
 # keep layout tidy
-tmux select-layout -t "$SESSION:$WIN_NAME" main-horizontal
+tmux select-layout -t "$SESSION:$WIN_NAME" tiled
 
 echo "Started in tmux. Attach: tmux attach -t $SESSION"
 echo "Potentiometer pane: $PANE_POT"

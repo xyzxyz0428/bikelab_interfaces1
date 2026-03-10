@@ -77,7 +77,7 @@ class PotentiometerCSVLogger:
         self.w = csv.writer(self.f)
         if new_file:
             self.w.writerow([
-                "timestamp",
+                "t_unix_ns",
                 "ok",
                 "adc_raw",
                 "angle_deg",
